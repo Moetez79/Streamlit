@@ -1,6 +1,8 @@
+from transformers import pipeline  # Doit fonctionner après l'installation
 import streamlit as st
 from transformers import pipeline
-
+pip install transformers 
+transformers>=4.30.0
 MODEL = "jy46604790/Fake-News-Bert-Detect"
 clf = pipeline("text-classification", model=MODEL, tokenizer=MODEL)
 
