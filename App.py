@@ -1,55 +1,38 @@
-import pickle
-import re
-import os
+import streamlit as st
+from transformers import pipeline
 
-# Chemins des modèles
-model_path = "../models/sentiment_model.pkl"
-vectorizer_path = "../models/tfidf_vectorizer.pkl"
+MODEL = "jy46604790/Fake-News-Bert-Detect"
+clf = pipeline("text-classification", model=MODEL, tokenizer=MODEL)
 
-# Vérification de l'existence des fichiers
-if not (os.path.exists(model_path) and os.path.exists(vectorizer_path)):
-    print("❌ Erreur: Fichier modèle ou vectoriseur introuvable. Vérifiez les chemins.")
-    exit(1)
+# ✅ Fake news prediction function
+def predict_fake_news(text):
+    result = clf(text)
+    return result
+    #return "😊 Positive" if prediction[0] == 1 else "😞 Negative"
 
-# Chargement des modèles
-with open(model_path, "rb") as f:
-    model = pickle.load(f)
-with open(vectorizer_path, "rb") as f:
-    vectorizer = pickle.load(f)
+# ✅ Streamlit UI
+st.set_page_config(page_title="Fake News Detector", page_icon="💬", layout="centered")
 
-# Nettoyage de texte
-def clean_tweet(text):
-    text = re.sub(r'@\w+', '', text)  # Mentions
-    text = re.sub(r'http\S+', '', text)  # URLs
-    text = re.sub(r'[^a-zA-Z\s]', '', text)  # Caractères spéciaux
-    return text.lower().strip()
+st.title("💡 Fake News Detection")
+st.markdown("### Enter an article below and check if it's fake now! 🚀")
 
-# Prédiction de sentiment
-def predict_sentiment(text):
-    if not hasattr(vectorizer, "idf_"):
-        print("❌ Erreur: Problème de configuration du vectoriseur.")
-        return "Erreur"
-    
-    cleaned = clean_tweet(text)
-    transformed = vectorizer.transform([cleaned]).toarray()
-    prediction = model.predict(transformed)
-    return "😊 Positif" if prediction[0] == 1 else "😞 Négatif"
+# User input
+user_input = st.text_area("📝 Enter your article here:", height=150, placeholder="Type or paste an article...")
 
-# Interface en ligne de commande
-print("\n=== Analyseur de Sentiment pour Tweets ===")
-print("Tapez 'q' pour quitter\n")
+# Predict sentiment
+if st.button("🔍 Detect Fake News"):
+    if user_input.strip():
+        result = predict_fake_news(user_input)
+        if result != "Error":
+            st.success(f"*Result :* {result}")
+    else:
+        st.warning("⚠️ Please enter an article before analyzing.")
 
-while True:
-    tweet = input("Entrez votre tweet : ")
-    
-    if tweet.lower() == 'q':
-        print("\nMerci d'avoir utilisé l'analyseur ! 👋")
-        break
-        
-    if not tweet.strip():
-        print("⚠️ Veuillez entrer un texte valide")
-        continue
-        
-    resultat = predict_sentiment(tweet)
-    if resultat != "Erreur":
-        print(f"\nRésultat : {resultat}\n")
+# ✅ Extra UI enhancements
+st.markdown("---")
+st.markdown("### ✨ Why use this app?")
+st.markdown("- 🔥 *Instant Sentiment Analysis* for your tweets!")
+st.markdown("- 🎨 *Beautiful & Minimal UI* for easy interaction.")
+st.markdown("- 🚀 *Fast & Efficient* model built with TF-IDF & Logistic Regression.")
+st.markdown("---")
+st.markdown("💡 Built with ❤️ using Streamlit and Machine Learning! ✨")
